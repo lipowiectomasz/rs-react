@@ -1,0 +1,18 @@
+.controls{
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+button {
+    width: 25%;
+    font-size: 1rem;
+}
+input{
+    width: 60%;
+}
+input, button{
+    border: none;
+    padding: 15px;
+    border-radius: 100px;
+}
