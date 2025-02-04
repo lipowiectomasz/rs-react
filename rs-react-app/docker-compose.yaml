@@ -1,0 +1,15 @@
+services:
+  vite_docker:
+    image: node:lts-slim
+    container_name: react-app
+    entrypoint: /bin/sh
+    restart: on-failure
+    ports:
+      - 8003:5173
+    working_dir: /var/www/html
+    volumes:
+      - type: bind
+        source: ./
+        target: /var/www/html
+    tty: true
+    command: [ "./start.sh" ]
