@@ -1,13 +1,17 @@
 import { Component } from 'react';
 import './Card.css';
 
+interface Hero {
+  name: string;
+}
+
 interface CardProps {
   searchTerm: string;
   toggleLoading: (isLoading: boolean) => void;
 }
 
 interface CardState {
-  results: string[];
+  results: Hero[];
   error: boolean;
 }
 

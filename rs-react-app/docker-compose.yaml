@@ -4,8 +4,9 @@ services:
     container_name: react-app
     entrypoint: /bin/sh
     restart: on-failure
+    network_mode: 'host'
     ports:
-      - 8003:5173
+      - '8003:5173'
     working_dir: /var/www/html
     volumes:
       - type: bind
