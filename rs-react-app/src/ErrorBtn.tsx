@@ -1,11 +1,28 @@
 import { Component } from 'react';
 import './ErrorBtn.css';
 
-export default class ErrorBtn extends Component {
+interface ErrorBtnState {
+  shouldThrowError: boolean;
+}
+
+export default class ErrorBtn extends Component<object, ErrorBtnState> {
+  constructor(props: object) {
+    super(props);
+    this.state = { shouldThrowError: false };
+  }
+
+  handleClick = () => {
+    this.setState({ shouldThrowError: true });
+  };
+
   render() {
+    if (this.state.shouldThrowError) {
+      throw new Error('An intentional error has occurred!');
+    }
+
     return (
       <div className="error-btn-box">
-        <button>Error Trigger</button>
+        <button onClick={this.handleClick}>Error Trigger</button>
       </div>
     );
   }

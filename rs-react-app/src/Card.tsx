@@ -8,6 +8,7 @@ interface CardProps {
 
 interface CardState {
   results: string[];
+  error: boolean;
 }
 
 export default class Card extends Component<CardProps, CardState> {
@@ -15,6 +16,7 @@ export default class Card extends Component<CardProps, CardState> {
     super(props);
     this.state = {
       results: [],
+      error: false,
     };
   }
 
@@ -40,11 +42,21 @@ export default class Card extends Component<CardProps, CardState> {
   }
 
   fetchResults = (search: string) => {
+    this.setState({ error: false });
     this.props.toggleLoading(true);
-    this.apiCall(search).then((results) => {
-      this.props.toggleLoading(false);
-      this.setState({ results: results.results });
-    });
+
+    this.apiCall(search)
+      .then((results) => {
+        this.props.toggleLoading(false);
+        if (results && results.results) {
+          this.setState({ results: results.results });
+        }
+      })
+      .catch((err) => {
+        this.props.toggleLoading(false);
+        this.setState({ error: true });
+        console.log('API error:', err);
+      });
   };
 
   apiCall = (search: string) => {
@@ -55,35 +67,42 @@ export default class Card extends Component<CardProps, CardState> {
     }
 
     return fetch(url)
-      .then(function (res) {
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
         return res.json();
       })
-      .then(function (data) {
-        return data;
-      })
-      .catch(function (err) {
-        console.log(err);
+      .catch((err) => {
+        throw err;
       });
   };
 
   render() {
-    const { results } = this.state;
+    const { results, error } = this.state;
+
     return (
       <div className="card">
         <h3 className="card-title">Results</h3>
-        <ul>
-          <li>
-            <div className="item-name head">Item number</div>
-            <div className="item-desc head">Item description</div>
-          </li>
-          <hr />
-          {results.map((hero, index) => (
-            <li key={index}>
-              <div className="item-name">{index + 1}</div>
-              <div className="item-desc">{hero.name}</div>
+        {error ? (
+          <div className="error-message">
+            The API is not responding. Please try again later.
+          </div>
+        ) : (
+          <ul>
+            <li>
+              <div className="item-name head">Item number</div>
+              <div className="item-desc head">Item description</div>
             </li>
-          ))}
-        </ul>
+            <hr />
+            {results.map((hero, index) => (
+              <li key={index}>
+                <div className="item-name">{index + 1}</div>
+                <div className="item-desc">{hero.name}</div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     );
   }

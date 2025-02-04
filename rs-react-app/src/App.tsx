@@ -5,17 +5,8 @@ import Card from './Card.tsx';
 import ErrorBtn from './ErrorBtn.tsx';
 import './App.css';
 
-interface AppState {
-  searchTerm: string;
-  isLoading: boolean;
-}
-
-interface AppProps {
-  searchTerm: string;
-}
-
-export default class App extends Component<AppProps, AppState> {
-  constructor(props: AppProps) {
+export default class App extends Component {
+  constructor(props: never) {
     super(props);
     this.state = {
       searchTerm: localStorage.getItem('searchTerm') || '',
