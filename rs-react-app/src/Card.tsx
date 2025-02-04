@@ -18,44 +18,32 @@ export default class Card extends Component<CardProps, CardState> {
     };
   }
 
+  componentDidMount() {
+    const search = localStorage.getItem('searchTerm') || '';
+    this.fetchResults(search);
+  }
+
   componentDidUpdate(prevProps: CardProps) {
-    if (prevProps.searchTerm !== '') {
-      this.fetchSearchResults();
+    if (
+      prevProps.searchTerm !== '' &&
+      prevProps.searchTerm !== this.props.searchTerm
+    ) {
+      this.fetchResults(this.props.searchTerm);
     }
 
-    if (prevProps.searchTerm === '') {
-      this.fetchAllResults();
+    if (
+      prevProps.searchTerm === '' &&
+      prevProps.searchTerm !== this.props.searchTerm
+    ) {
+      this.fetchResults('');
     }
   }
 
-  fetchSearchResults = () => {
+  fetchResults = (search: string) => {
     this.props.toggleLoading(true);
-    console.log('fetchSearchResults');
-    this.apiCall(this.props.searchTerm).then((results) => {
+    this.apiCall(search).then((results) => {
       this.props.toggleLoading(false);
-      console.log(results);
-    });
-
-    // setTimeout(() => {
-    //   // Example: Replace with actual API call logic
-    //   const mockResults = [
-    //     `Result for "${this.props.searchTerm}"`,
-    //     'Another result',
-    //   ];
-    //
-    //   this.setState({
-    //     results: mockResults,
-    //     isLoading: false,
-    //   });
-    //   this.props.toggleLoading(isLoading);
-    // }, 1500); // Simulate network delay
-  };
-
-  fetchAllResults = () => {
-    console.log('fetchAllResults');
-    this.apiCall('').then((results) => {
-      this.props.toggleLoading(false);
-      console.log(results);
+      this.setState({ results: results.results });
     });
   };
 
@@ -79,19 +67,22 @@ export default class Card extends Component<CardProps, CardState> {
   };
 
   render() {
+    const { results } = this.state;
     return (
       <div className="card">
         <h3 className="card-title">Results</h3>
         <ul>
           <li>
-            <div className="item-name head">Item name</div>
+            <div className="item-name head">Item number</div>
             <div className="item-desc head">Item description</div>
           </li>
           <hr />
-          <li>
-            <div className="item-name head">Item name</div>
-            <div className="item-desc head">Item description</div>
-          </li>
+          {results.map((hero, index) => (
+            <li key={index}>
+              <div className="item-name">{index + 1}</div>
+              <div className="item-desc">{hero.name}</div>
+            </li>
+          ))}
         </ul>
       </div>
     );

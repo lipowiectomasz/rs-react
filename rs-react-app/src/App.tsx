@@ -12,7 +12,6 @@ interface AppState {
 
 interface AppProps {
   searchTerm: string;
-  isLoading: boolean;
 }
 
 export default class App extends Component<AppProps, AppState> {
@@ -25,11 +24,12 @@ export default class App extends Component<AppProps, AppState> {
   }
 
   handleSearch = (searchTerm: string) => {
-    this.setState({ searchTerm });
+    console.log(searchTerm);
+    this.setState({ searchTerm: searchTerm });
   };
 
-  toggleLoading = (isLoading: boolean) => {
-    this.setState({ isLoading });
+  handleToggleLoading = (loading: boolean) => {
+    this.setState({ isLoading: loading });
   };
 
   render() {
@@ -38,12 +38,11 @@ export default class App extends Component<AppProps, AppState> {
         <Header title="Star Wars heroes library"></Header>
         <Controls
           onSearch={this.handleSearch}
-          searchValue={''}
-          isLoading={false}
+          isLoading={this.state.isLoading}
         ></Controls>
         <Card
           searchTerm={this.state.searchTerm}
-          toggleLoading={this.toggleLoading}
+          toggleLoading={this.handleToggleLoading}
         ></Card>
         <ErrorBtn></ErrorBtn>
       </div>

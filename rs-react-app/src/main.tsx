@@ -6,6 +6,6 @@ import App from './App.tsx';
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App searchTerm={''} isLoading={false} />
+    <App searchTerm={''} />
   </StrictMode>
 );
