@@ -1,8 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import './index.css';
+import './style/index.css';
 import App from './App.tsx';
-import ErrorBoundary from './ErrorBoundary.tsx';
+import ErrorBoundary from './components/ErrorBoundary.tsx';
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 createRoot(document.getElementById('root')!).render(

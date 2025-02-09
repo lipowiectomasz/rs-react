@@ -1,6 +1,6 @@
 import { Component, ChangeEvent } from 'react';
-import './Controls.css';
-import Loader from './Loader';
+import '../style/Controls.css';
+import Loader from './Loader.tsx';
 
 interface ControlsState {
   searchValue: string;

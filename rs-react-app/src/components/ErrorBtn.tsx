@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import './ErrorBtn.css';
+import '../style/ErrorBtn.css';
 
 interface ErrorBtnState {
   shouldThrowError: boolean;

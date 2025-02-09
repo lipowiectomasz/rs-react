@@ -1,9 +1,9 @@
 import { Component } from 'react';
-import Header from './Header.tsx';
-import Controls from './Controls.tsx';
-import Card from './Card.tsx';
-import ErrorBtn from './ErrorBtn.tsx';
-import './App.css';
+import Header from './components/Header.tsx';
+import Controls from './components/Controls.tsx';
+import Card from './components/Card.tsx';
+import ErrorBtn from './components/ErrorBtn.tsx';
+import './style/App.css';
 
 export default class App extends Component {
   constructor(props: never) {

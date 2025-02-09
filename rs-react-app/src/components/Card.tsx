@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import './Card.css';
+import '../style/Card.css';
 
 interface CardProps {
   searchTerm: string;
