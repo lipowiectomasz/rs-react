@@ -1,6 +1,8 @@
 .card {
   padding: 20px;
   margin-bottom: 20px;
+  max-width: 100%;
+  flex: 1;
 }
 .card-title {
   text-align: center;
@@ -13,6 +15,10 @@ li {
   display: flex;
   align-items: center;
   gap: 1rem;
+  cursor: pointer;
+}
+li:hover {
+  background-color: #424242;
 }
 .item-name {
   text-align: center;
@@ -26,4 +32,17 @@ li {
 }
 .head {
   font-size: 16px;
+}
+.pageBtn{
+  width: 50px;
+}
+.pagination{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.active{
+  transform: scale(1.2);
+  background-color: #4F4F4F;
 }

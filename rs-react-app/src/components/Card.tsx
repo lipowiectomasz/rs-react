@@ -1,42 +1,51 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useApi from './packages/useApi';
 import '../style/Card.css';
 
 interface CardProps {
   searchTerm: string;
   toggleLoading: (isLoading: boolean) => void;
+  page: number;
 }
 
 interface Result {
   name: string;
+  url: string;
 }
 
-export default function Card({ searchTerm, toggleLoading }: CardProps) {
+export default function Card({ searchTerm, toggleLoading, page = 0 }: CardProps) {
   const [results, setResults] = useState<Result[]>([]);
   const [error, setError] = useState(false);
+  const [isNext, setIsNext] = useState(false);
+  const [currentPage, setCurrentPage] = useState(page);
 
   useEffect(() => {
     const search = localStorage.getItem('searchTerm') || '';
-    fetchResults(search);
+    fetchResults(search, currentPage);
   }, []);
 
   useEffect(() => {
     if (searchTerm !== '') {
-      fetchResults(searchTerm);
+      fetchResults(searchTerm, currentPage);
     } else {
-      fetchResults('');
+      fetchResults('', currentPage);
     }
-  }, [searchTerm]);
+  }, [searchTerm, currentPage]);
 
-  const fetchResults = (search: string) => {
+  const fetchResults = (search: string, page = 0) => {
     setError(false);
     toggleLoading(true);
 
-    useApi(search)
+    useApi(search, page)
       .then((response) => {
         toggleLoading(false);
         if (response && response.results) {
-          console.log(response.results);
+          if (response.next) {
+            setIsNext(true);
+          } else {
+            setIsNext(false);
+          }
           setResults(response.results);
         }
       })
@@ -45,6 +54,20 @@ export default function Card({ searchTerm, toggleLoading }: CardProps) {
         setError(true);
         console.error('API error:', err);
       });
+  };
+
+  const navigate = useNavigate();
+
+  const handlePageNavigation = (page: number) => {
+    if (page > 0) {
+      navigate(`/?page=${page}`);
+      setCurrentPage(page);
+    }
+  };
+
+  const handleListItemClick = (url: string) => {
+    const id = url.split('/').filter(Boolean).pop();
+    navigate(`/?detail=${id}`);
   };
 
   return (
@@ -62,13 +85,45 @@ export default function Card({ searchTerm, toggleLoading }: CardProps) {
           </li>
           <hr />
           {results.map((hero, index) => (
-            <li key={index}>
-              <div className="item-name">{index + 1}</div>
+            <li key={index} onClick={() => handleListItemClick(hero.url)}>
+              <div className="item-name">
+                {page > 1 ? index + (page - 1) * 10 + 1 : index + 1}
+              </div>
               <div className="item-desc">{hero.name}</div>
             </li>
           ))}
         </ul>
       )}
+      <div className="pagination">
+        {page > 1 ? (
+          <button className="pageBtn"  onClick={() => handlePageNavigation(page - 1)}>
+            {page - 1}
+          </button>
+        ) : (
+          ''
+        )}
+        {page == 0 ? (
+          <button className="pageBtn active" onClick={() => handlePageNavigation(1)}>1</button>
+        ) : (
+          <button className="pageBtn active" onClick={() => handlePageNavigation(page)}>
+            {page}
+          </button>
+        )}
+        {isNext && page == 0 ? (
+          <button className="pageBtn" onClick={() => handlePageNavigation(page + 1)}>
+            {page + 2}
+          </button>
+        ) : (
+          ''
+        )}
+        {isNext && page > 0 ? (
+          <button className="pageBtn" onClick={() => handlePageNavigation(page + 1)}>
+            {page + 1}
+          </button>
+        ) : (
+          ''
+        )}
+      </div>
     </div>
   );
 }
