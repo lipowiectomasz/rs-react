@@ -37,7 +37,7 @@ export default function Detail({ detailId }: DetailProps) {
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
       if (detailRef.current && !detailRef.current.contains(event.target as Node)) {
-        handleClose(); // Close the detail view when clicking outside
+        handleClose();
       }
     };
 
