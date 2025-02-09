@@ -1,49 +1,37 @@
-import { Component, ChangeEvent } from 'react';
+import { useState, ChangeEvent } from 'react';
 import '../style/Controls.css';
 import Loader from './Loader.tsx';
-
-interface ControlsState {
-  searchValue: string;
-}
 
 interface ControlsProps {
   onSearch: (searchTerm: string) => void;
   isLoading: boolean;
 }
 
-export default class Controls extends Component<ControlsProps, ControlsState> {
-  constructor(props: ControlsProps) {
-    super(props);
-    this.state = {
-      searchValue: localStorage.getItem('searchTerm') || '',
-    };
-  }
+export default function Controls({ onSearch, isLoading }: ControlsProps) {
+  const [searchValue, setSearchValue] = useState<string>(
+    localStorage.getItem('searchTerm') || ''
+  );
 
-  handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    this.setState({ searchValue: event.target.value });
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(event.target.value);
   };
 
-  handleSearch = () => {
-    const { searchValue } = this.state;
+  const handleSearch = () => {
     localStorage.setItem('searchTerm', searchValue);
-    this.props.onSearch(searchValue);
+    onSearch(searchValue);
   };
 
-  render() {
-    const { searchValue } = this.state;
-
-    return (
-      <div className="controls">
-        <input
-          type="text"
-          placeholder="Search"
-          name="search"
-          value={searchValue}
-          onChange={this.handleInputChange}
-        ></input>
-        {this.props.isLoading ? <Loader /> : null}
-        <button onClick={this.handleSearch}>Search</button>
-      </div>
-    );
-  }
+  return (
+    <div className="controls">
+      <input
+        type="text"
+        placeholder="Search"
+        name="search"
+        value={searchValue}
+        onChange={handleInputChange}
+      />
+      {isLoading && <Loader />}
+      <button onClick={handleSearch}>Search</button>
+    </div>
+  );
 }
