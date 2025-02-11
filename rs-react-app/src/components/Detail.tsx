@@ -36,7 +36,10 @@ export default function Detail({ detailId }: DetailProps) {
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
-      if (detailRef.current && !detailRef.current.contains(event.target as Node)) {
+      if (
+        detailRef.current &&
+        !detailRef.current.contains(event.target as Node)
+      ) {
         handleClose();
       }
     };
@@ -99,13 +102,27 @@ export default function Detail({ detailId }: DetailProps) {
         Close
       </button>
       <h3>{heroDetails.name}</h3>
-      <p><strong>Height:</strong> {heroDetails.height}</p>
-      <p><strong>Mass:</strong> {heroDetails.mass}</p>
-      <p><strong>Hair Color:</strong> {heroDetails.hair_color}</p>
-      <p><strong>Skin Color:</strong> {heroDetails.skin_color}</p>
-      <p><strong>Eye Color:</strong> {heroDetails.eye_color}</p>
-      <p><strong>Birth Year:</strong> {heroDetails.birth_year}</p>
-      <p><strong>Gender:</strong> {heroDetails.gender}</p>
+      <p>
+        <strong>Height:</strong> {heroDetails.height}
+      </p>
+      <p>
+        <strong>Mass:</strong> {heroDetails.mass}
+      </p>
+      <p>
+        <strong>Hair Color:</strong> {heroDetails.hair_color}
+      </p>
+      <p>
+        <strong>Skin Color:</strong> {heroDetails.skin_color}
+      </p>
+      <p>
+        <strong>Eye Color:</strong> {heroDetails.eye_color}
+      </p>
+      <p>
+        <strong>Birth Year:</strong> {heroDetails.birth_year}
+      </p>
+      <p>
+        <strong>Gender:</strong> {heroDetails.gender}
+      </p>
     </div>
   );
 }

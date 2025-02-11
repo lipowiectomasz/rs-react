@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useApi from './packages/useApi';
 import '../style/Card.css';
 
 interface CardProps {
@@ -14,30 +13,41 @@ interface Result {
   url: string;
 }
 
-export default function Card({ searchTerm, toggleLoading, page = 0 }: CardProps) {
+export default function Card({
+  searchTerm,
+  toggleLoading,
+  page = 0,
+}: CardProps) {
   const [results, setResults] = useState<Result[]>([]);
   const [error, setError] = useState(false);
   const [isNext, setIsNext] = useState(false);
   const [currentPage, setCurrentPage] = useState(page);
 
   useEffect(() => {
-    const search = localStorage.getItem('searchTerm') || '';
-    fetchResults(search, currentPage);
-  }, []);
-
-  useEffect(() => {
-    if (searchTerm !== '') {
-      fetchResults(searchTerm, currentPage);
-    } else {
-      fetchResults('', currentPage);
-    }
-  }, [searchTerm, currentPage]);
-
-  const fetchResults = (search: string, page = 0) => {
     setError(false);
     toggleLoading(true);
+    searchTerm = localStorage.getItem('searchTerm') || '';
 
-    useApi(search, page)
+    let url = 'https://swapi.dev/api/people';
+    if (searchTerm !== '') {
+      url += `/?search=${searchTerm}`;
+    }
+
+    if (currentPage > 1 && searchTerm !== '') {
+      url += `&page=${currentPage}`;
+    }
+
+    if (currentPage > 1 && searchTerm === '') {
+      url += `?page=${currentPage}`;
+    }
+
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
       .then((response) => {
         toggleLoading(false);
         if (response && response.results) {
@@ -54,7 +64,7 @@ export default function Card({ searchTerm, toggleLoading, page = 0 }: CardProps)
         setError(true);
         console.error('API error:', err);
       });
-  };
+  }, [searchTerm, currentPage]);
 
   const navigate = useNavigate();
 
@@ -96,28 +106,45 @@ export default function Card({ searchTerm, toggleLoading, page = 0 }: CardProps)
       )}
       <div className="pagination">
         {page > 1 ? (
-          <button className="pageBtn"  onClick={() => handlePageNavigation(page - 1)}>
+          <button
+            className="pageBtn"
+            onClick={() => handlePageNavigation(page - 1)}
+          >
             {page - 1}
           </button>
         ) : (
           ''
         )}
         {page == 0 ? (
-          <button className="pageBtn active" onClick={() => handlePageNavigation(1)}>1</button>
+          <button
+            className="pageBtn active"
+            onClick={() => handlePageNavigation(1)}
+          >
+            1
+          </button>
         ) : (
-          <button className="pageBtn active" onClick={() => handlePageNavigation(page)}>
+          <button
+            className="pageBtn active"
+            onClick={() => handlePageNavigation(page)}
+          >
             {page}
           </button>
         )}
         {isNext && page == 0 ? (
-          <button className="pageBtn" onClick={() => handlePageNavigation(page + 1)}>
+          <button
+            className="pageBtn"
+            onClick={() => handlePageNavigation(page + 1)}
+          >
             {page + 2}
           </button>
         ) : (
           ''
         )}
         {isNext && page > 0 ? (
-          <button className="pageBtn" onClick={() => handlePageNavigation(page + 1)}>
+          <button
+            className="pageBtn"
+            onClick={() => handlePageNavigation(page + 1)}
+          >
             {page + 1}
           </button>
         ) : (
