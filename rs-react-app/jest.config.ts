@@ -1,4 +1,6 @@
 import type { Config } from '@jest/types';
+import { TextEncoder } from 'util';
+global.TextEncoder = TextEncoder;
 
 const config: Config.InitialOptions = {
   preset: 'ts-jest',
@@ -24,3 +26,4 @@ const config: Config.InitialOptions = {
   testPathIgnorePatterns: ['<rootDir>/src/__tests__/setup.ts'],
 };
 
+export default config;

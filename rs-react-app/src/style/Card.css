@@ -33,16 +33,16 @@ li:hover {
 .head {
   font-size: 16px;
 }
-.pageBtn{
+.pageBtn {
   width: 50px;
 }
-.pagination{
+.pagination {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 20px;
 }
-.active{
+.active {
   transform: scale(1.2);
-  background-color: #4F4F4F;
+  background-color: #4f4f4f;
 }

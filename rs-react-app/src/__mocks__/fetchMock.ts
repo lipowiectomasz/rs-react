@@ -1,10 +1,9 @@
-export const mockFetch = (response: any, isError: boolean = false) => {
-  global.fetch = jest.fn(() =>
-    isError
-      ? Promise.reject(new Error('Network error'))
-      : Promise.resolve({
-          ok: true,
-          json: async () => response,
-        })
-  ) as jest.Mock;
-};
+export function mockFetch(data: object) {
+  return jest.fn().mockImplementation(() =>
+    Promise.resolve({
+      ok: true,
+      json: () => data,
+      text: () => Promise.resolve(JSON.stringify(data)),
+    })
+  );
+}

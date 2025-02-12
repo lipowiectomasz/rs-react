@@ -1,36 +1,53 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import Controls from '../components/Controls';
+import '@testing-library/jest-dom';
 
-test('renders search input, button, and displays loader conditionally', () => {
-  const mockOnSearch = jest.fn();
+jest.mock('../components/Loader', () => (
+  <div data-testid="loader">Loading...</div>
+));
 
-  render(<Controls onSearch={mockOnSearch} isLoading={false} />);
+describe('Controls Component', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
 
-  expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();
-  expect(screen.getByText('Search')).toBeInTheDocument();
-  expect(screen.queryByTestId('loader')).toBeNull();
-});
+  test('renders input and button', () => {
+    render(<Controls onSearch={jest.fn()} isLoading={false} />);
 
-test('shows loader when isLoading is true', () => {
-  const mockOnSearch = jest.fn();
+    expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /search/i })).toBeInTheDocument();
+  });
 
-  render(<Controls onSearch={mockOnSearch} isLoading={true} />);
+  test('loads initial search value from localStorage', () => {
+    localStorage.setItem('searchTerm', 'test search');
+    render(<Controls onSearch={jest.fn()} isLoading={false} />);
 
-  expect(screen.getByTestId('loader')).toBeInTheDocument();
-});
+    expect(screen.getByPlaceholderText('Search')).toHaveValue('test search');
+  });
 
-test('updates input value and triggers search on button click', () => {
-  const mockOnSearch = jest.fn();
+  test('updates input value on change', () => {
+    render(<Controls onSearch={jest.fn()} isLoading={false} />);
+    const input = screen.getByPlaceholderText('Search');
 
-  render(<Controls onSearch={mockOnSearch} isLoading={false} />);
+    fireEvent.change(input, { target: { value: 'new value' } });
+    expect(input).toHaveValue('new value');
+  });
 
-  const searchInput = screen.getByPlaceholderText('Search');
-  fireEvent.change(searchInput, { target: { value: 'Luke' } });
+  test('calls onSearch with correct value and stores in localStorage on button click', () => {
+    const mockOnSearch = jest.fn();
+    render(<Controls onSearch={mockOnSearch} isLoading={false} />);
+    const input = screen.getByPlaceholderText('Search');
+    const button = screen.getByRole('button', { name: /search/i });
 
-  expect(searchInput).toHaveValue('Luke');
+    fireEvent.change(input, { target: { value: 'query' } });
+    fireEvent.click(button);
 
-  fireEvent.click(screen.getByText('Search'));
+    expect(mockOnSearch).toHaveBeenCalledWith('query');
+    expect(localStorage.getItem('searchTerm')).toBe('query');
+  });
 
-  expect(localStorage.getItem('searchTerm')).toBe('Luke');
-  expect(mockOnSearch).toHaveBeenCalledWith('Luke');
+  test('does not show Loader component when isLoading is false', () => {
+    render(<Controls onSearch={jest.fn()} isLoading={false} />);
+    expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
+  });
 });

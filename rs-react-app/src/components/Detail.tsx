@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Loader from './Loader.tsx';
 import '../style/Detail.css';
 
@@ -48,7 +48,7 @@ export default function Detail({ detailId }: DetailProps) {
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
-  }, []);
+  });
 
   const fetchHeroDetails = async (id: string) => {
     setIsLoading(true);
@@ -70,7 +70,13 @@ export default function Detail({ detailId }: DetailProps) {
   };
 
   const handleClose = () => {
-    navigate('/');
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.delete('detail');
+
+    navigate({
+      pathname: '/',
+      search: searchParams.toString(),
+    });
   };
 
   if (isLoading) {
@@ -101,7 +107,7 @@ export default function Detail({ detailId }: DetailProps) {
       <button onClick={handleClose} className="close-btn">
         Close
       </button>
-      <h3>{heroDetails.name}</h3>
+      <h3 data-testid="heroname">{heroDetails.name}</h3>
       <p>
         <strong>Height:</strong> {heroDetails.height}
       </p>

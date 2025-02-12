@@ -16,7 +16,7 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "allowImportingTsExtensions": true,  // Fixes TS5097
+    "allowImportingTsExtensions": true, // Fixes TS5097
     "noEmit": true,
     "types": ["jest", "node"],
     "baseUrl": ".",
@@ -24,9 +24,6 @@
       "*": ["node_modules/*"]
     }
   },
-  "include": [
-    "src",
-    "src/__tests__/**/*"
-  ],
+  "include": ["src", "src/__tests__/**/*"],
   "exclude": ["node_modules", "build", "dist"]
 }

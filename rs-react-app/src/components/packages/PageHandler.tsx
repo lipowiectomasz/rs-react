@@ -4,15 +4,19 @@ import {
   Route,
   Navigate,
   useSearchParams,
-} from 'react-router-dom';
+  useParams,
+} from 'react-router';
 import App from '../../App';
 import NoPage from '../NoPage';
+import Detail from '../Detail';
 
 function Router() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<PageHandler />} />
+        <Route path="/" element={<PageHandler />}>
+          <Route path="detail/:detailId" element={<DetailWrapper />} />
+        </Route>
         <Route path="*" element={<NoPage />} />
       </Routes>
     </BrowserRouter>
@@ -21,26 +25,21 @@ function Router() {
 
 function PageHandler() {
   const [searchParams] = useSearchParams();
-
   const pageParam = searchParams.get('page');
-  const detailParam = searchParams.get('detail');
 
   const isPageMissingOrValid =
     !pageParam || (!isNaN(Number(pageParam)) && Number(pageParam) > 0);
 
-  const isDetailMissingOrValid =
-    !detailParam || (!isNaN(Number(detailParam)) && Number(detailParam) > 0);
-
-  if (!isPageMissingOrValid || !isDetailMissingOrValid) {
+  if (!isPageMissingOrValid) {
     return <Navigate to="*" replace />;
   }
 
-  return (
-    <App
-      page={pageParam ? Number(pageParam) : 0}
-      detail={detailParam ? Number(detailParam) : 0}
-    />
-  );
+  return <App page={pageParam ? Number(pageParam) : 0} />;
+}
+
+function DetailWrapper() {
+  const { detailId } = useParams();
+  return detailId ? <Detail detailId={detailId} /> : null;
 }
 
 export default Router;

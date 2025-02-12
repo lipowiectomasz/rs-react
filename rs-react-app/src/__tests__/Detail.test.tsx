@@ -1,34 +1,78 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Detail from '../components/Detail';
-import { mockFetch } from '../__mocks__/fetchMock';
-import { BrowserRouter } from 'react-router-dom';
+import '@testing-library/jest-dom';
+import { useNavigate } from 'react-router';
+import { mockFetch } from '../__mocks__/fetchMock.ts';
+
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
+  useNavigate: jest.fn(),
+}));
 
 describe('Detail Component', () => {
+  let mockNavigate: jest.Mock;
+
   beforeEach(() => {
+    mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
+  });
+
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
-  test('renders detail component with content', async () => {
-    render(
-      <BrowserRouter>
-        <Detail detailId="1" />
-      </BrowserRouter>
-    );
+  test('close detail after clicking on close', async () => {
+    window.fetch = mockFetch({
+      birth_year: '19BBY',
+      created: '2014-12-09T13:50:51.644000Z',
+      edited: '2014-12-20T21:17:56.891000Z',
+      eye_color: 'blue',
+      films: [
+        'https://swapi.dev/api/films/1/',
+        'https://swapi.dev/api/films/2/',
+        'https://swapi.dev/api/films/3/',
+        'https://swapi.dev/api/films/6/',
+      ],
+      gender: 'male',
+      hair_color: 'blond',
+      height: '172',
+      homeworld: 'https://swapi.dev/api/planets/1/',
+      mass: '77',
+      name: 'Luke Skywalker',
+      skin_color: 'fair',
+      species: [],
+      starships: [
+        'https://swapi.dev/api/starships/12/',
+        'https://swapi.dev/api/starships/22/',
+      ],
+      url: 'https://swapi.dev/api/people/1/',
+      vehicles: [
+        'https://swapi.dev/api/vehicles/14/',
+        'https://swapi.dev/api/vehicles/30/',
+      ],
+    });
 
-    expect(screen.getByText(/Luke Skywalker/i)).toBeInTheDocument();
+    render(<Detail detailId={'1'} />);
+    const titleOnSite = await waitFor(() => screen.getByText('Close'));
+    fireEvent.click(titleOnSite);
+    await waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith({ pathname: '/', search: '' })
+    );
   });
 
-  test('shows an error message if API call fails', async () => {
-    mockFetch({}, true); // Simulate network failure
+  test('error on call', async () => {
+    window.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-    render(
-      <MemoryRouter>
-        <Detail detailId="invalid" />
-      </MemoryRouter>
-    );
+    render(<Detail detailId={'da'} />);
 
-    const errorMessage = await screen.findByText(/Error loading hero details/i);
-    expect(errorMessage).toBeInTheDocument();
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Error fetching hero details:',
+        expect.any(Error)
+      );
+    });
+
+    consoleSpy.mockRestore();
   });
 });

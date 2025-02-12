@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 import '../style/Card.css';
 
 interface CardProps {
@@ -26,19 +26,19 @@ export default function Card({
   useEffect(() => {
     setError(false);
     toggleLoading(true);
-    searchTerm = localStorage.getItem('searchTerm') || '';
+
+    const localSearchTerm = localStorage.getItem('searchTerm') || searchTerm;
 
     let url = 'https://swapi.dev/api/people';
-    if (searchTerm !== '') {
-      url += `/?search=${searchTerm}`;
+    if (localSearchTerm !== '') {
+      url += `/?search=${localSearchTerm}`;
     }
 
-    if (currentPage > 1 && searchTerm !== '') {
-      url += `&page=${currentPage}`;
-    }
-
-    if (currentPage > 1 && searchTerm === '') {
-      url += `?page=${currentPage}`;
+    if (currentPage > 1) {
+      url +=
+        localSearchTerm !== ''
+          ? `&page=${currentPage}`
+          : `?page=${currentPage}`;
     }
 
     fetch(url)
@@ -51,11 +51,7 @@ export default function Card({
       .then((response) => {
         toggleLoading(false);
         if (response && response.results) {
-          if (response.next) {
-            setIsNext(true);
-          } else {
-            setIsNext(false);
-          }
+          setIsNext(!!response.next);
           setResults(response.results);
         }
       })
@@ -67,17 +63,28 @@ export default function Card({
   }, [searchTerm, currentPage]);
 
   const navigate = useNavigate();
-
-  const handlePageNavigation = (page: number) => {
-    if (page > 0) {
-      navigate(`/?page=${page}`);
-      setCurrentPage(page);
-    }
-  };
+  const location = useLocation();
 
   const handleListItemClick = (url: string) => {
     const id = url.split('/').filter(Boolean).pop();
-    navigate(`/?detail=${id}`);
+    const searchParams = new URLSearchParams(location.search);
+    navigate(
+      `/detail/${id}` + `${location.pathname}?${searchParams.toString()}`
+    );
+  };
+
+  const handlePageNavigation = (page: number) => {
+    if (page > 0) {
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.set('page', page.toString());
+
+      navigate({
+        pathname: location.pathname,
+        search: searchParams.toString(),
+      });
+
+      setCurrentPage(page);
+    }
   };
 
   return (
@@ -97,7 +104,9 @@ export default function Card({
           {results.map((hero, index) => (
             <li key={index} onClick={() => handleListItemClick(hero.url)}>
               <div className="item-name">
-                {page > 1 ? index + (page - 1) * 10 + 1 : index + 1}
+                {currentPage > 1
+                  ? index + (currentPage - 1) * 10 + 1
+                  : index + 1}
               </div>
               <div className="item-desc">{hero.name}</div>
             </li>
@@ -105,50 +114,27 @@ export default function Card({
         </ul>
       )}
       <div className="pagination">
-        {page > 1 ? (
+        {currentPage > 1 && (
           <button
             className="pageBtn"
-            onClick={() => handlePageNavigation(page - 1)}
+            onClick={() => handlePageNavigation(currentPage - 1)}
           >
-            {page - 1}
-          </button>
-        ) : (
-          ''
-        )}
-        {page == 0 ? (
-          <button
-            className="pageBtn active"
-            onClick={() => handlePageNavigation(1)}
-          >
-            1
-          </button>
-        ) : (
-          <button
-            className="pageBtn active"
-            onClick={() => handlePageNavigation(page)}
-          >
-            {page}
+            {currentPage - 1}
           </button>
         )}
-        {isNext && page == 0 ? (
+        <button
+          className="pageBtn active"
+          onClick={() => handlePageNavigation(currentPage || 1)}
+        >
+          {currentPage || 1}
+        </button>
+        {isNext && (
           <button
             className="pageBtn"
-            onClick={() => handlePageNavigation(page + 1)}
+            onClick={() => handlePageNavigation(currentPage + 1)}
           >
-            {page + 2}
+            {currentPage + 1}
           </button>
-        ) : (
-          ''
-        )}
-        {isNext && page > 0 ? (
-          <button
-            className="pageBtn"
-            onClick={() => handlePageNavigation(page + 1)}
-          >
-            {page + 1}
-          </button>
-        ) : (
-          ''
         )}
       </div>
     </div>

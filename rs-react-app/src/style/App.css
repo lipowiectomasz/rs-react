@@ -5,7 +5,7 @@
 h1 {
   text-align: center;
 }
-.content{
+.content {
   display: flex;
   flex-direction: row;
   justify-content: center;
