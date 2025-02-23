@@ -1,5 +1,4 @@
 import { Outlet } from 'react-router';
-import { useDispatch } from 'react-redux';
 import Header from './components/Header.tsx';
 import Controls from './components/Controls.tsx';
 import Card from './components/Card.tsx';
@@ -7,7 +6,6 @@ import ErrorBtn from './components/ErrorBtn.tsx';
 import './style/App.css';
 import { useCallback, useEffect, useState } from 'react';
 import Flyout from './components/Flyout';
-import { setLoading } from './features/selector/SelectorSlice';
 import { ThemeContext } from './app/theme.tsx';
 import ThemeSwitcher from './components/ThemeSwitcher.tsx';
 
@@ -20,7 +18,6 @@ export default function App({ page }: AppProps) {
   const [searchTerm, setSearchTerm] = useState<string>(
     localStorage.getItem('searchTerm') || ''
   );
-  const dispatch = useDispatch();
   const [theme, setTheme] = useState<'light' | 'dark'>(
     (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
   );
@@ -37,7 +34,6 @@ export default function App({ page }: AppProps) {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  dispatch(setLoading(true));
   const handleSearchChange = useCallback((searchTerm: string) => {
     setSearchTerm(searchTerm);
   }, []);

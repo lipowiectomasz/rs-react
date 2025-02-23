@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Hero } from '../selector/SelectorSlice';
+import { Hero, setLoading } from '../selector/SelectorSlice';
 
 export const starWarsApi = createApi({
   reducerPath: 'starWarsApi',
@@ -16,9 +16,29 @@ export const starWarsApi = createApi({
           : { page: Math.max(1, page) },
       }),
       keepUnusedDataFor: 60,
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        dispatch(setLoading(true));
+        try {
+          await queryFulfilled;
+        } catch (error) {
+          console.error('API error:', error);
+        } finally {
+          dispatch(setLoading(false));
+        }
+      },
     }),
     fetchCharacterDetails: builder.query<Hero, string>({
       query: (id) => `people/${id}`,
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        dispatch(setLoading(true));
+        try {
+          await queryFulfilled;
+        } catch (error) {
+          console.error('API error:', error);
+        } finally {
+          dispatch(setLoading(false));
+        }
+      },
     }),
   }),
 });
