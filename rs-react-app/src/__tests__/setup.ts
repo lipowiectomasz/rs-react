@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-
+import 'isomorphic-fetch';
 import {
   TextEncoder as NodeTextEncoder,
   TextDecoder as NodeTextDecoder,

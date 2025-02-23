@@ -4,10 +4,11 @@ import Controls from './components/Controls.tsx';
 import Card from './components/Card.tsx';
 import ErrorBtn from './components/ErrorBtn.tsx';
 import './style/App.css';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 interface AppProps {
   page: number;
+  children?: React.ReactNode;
 }
 
 export default function App({ page }: AppProps) {
@@ -20,9 +21,9 @@ export default function App({ page }: AppProps) {
     setSearchTerm(searchTerm);
   };
 
-  const handleToggleLoading = (loading: boolean) => {
+  const handleToggleLoading = useCallback((loading: boolean) => {
     setIsLoading(loading);
-  };
+  }, []);
 
   return (
     <div className="app">

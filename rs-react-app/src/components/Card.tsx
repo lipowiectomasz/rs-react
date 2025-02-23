@@ -68,9 +68,13 @@ export default function Card({
   const handleListItemClick = (url: string) => {
     const id = url.split('/').filter(Boolean).pop();
     const searchParams = new URLSearchParams(location.search);
-    navigate(
-      `/detail/${id}` + `${location.pathname}?${searchParams.toString()}`
-    );
+    if (searchParams.toString() != '') {
+      navigate(
+        `/detail/${id}` + `${location.pathname}?${searchParams.toString()}`
+      );
+    } else {
+      navigate(`/detail/${id}`);
+    }
   };
 
   const handlePageNavigation = (page: number) => {
@@ -131,9 +135,11 @@ export default function Card({
         {isNext && (
           <button
             className="pageBtn"
-            onClick={() => handlePageNavigation(currentPage + 1)}
+            onClick={() =>
+              handlePageNavigation(currentPage == 0 ? 2 : currentPage + 1)
+            }
           >
-            {currentPage + 1}
+            {currentPage == 0 ? 2 : currentPage + 1}
           </button>
         )}
       </div>

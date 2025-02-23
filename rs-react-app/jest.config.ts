@@ -1,5 +1,6 @@
 import type { Config } from '@jest/types';
 import { TextEncoder } from 'util';
+
 global.TextEncoder = TextEncoder;
 
 const config: Config.InitialOptions = {

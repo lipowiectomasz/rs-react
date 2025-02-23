@@ -5,6 +5,7 @@ import {
   Navigate,
   useSearchParams,
   useParams,
+  Outlet,
 } from 'react-router';
 import App from '../../App';
 import NoPage from '../NoPage';
@@ -34,7 +35,7 @@ function PageHandler() {
     return <Navigate to="*" replace />;
   }
 
-  return <App page={pageParam ? Number(pageParam) : 0} />;
+  return <App page={pageParam ? Number(pageParam) : 0}>{<Outlet />}</App>;
 }
 
 function DetailWrapper() {

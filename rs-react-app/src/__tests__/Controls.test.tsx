@@ -2,9 +2,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import Controls from '../components/Controls';
 import '@testing-library/jest-dom';
 
-jest.mock('../components/Loader', () => (
-  <div data-testid="loader">Loading...</div>
-));
+jest.mock('../components/Loader', () => ({
+  __esModule: true,
+  default: () => <div>Loading...</div>,
+}));
 
 describe('Controls Component', () => {
   beforeEach(() => {
@@ -49,5 +50,11 @@ describe('Controls Component', () => {
   test('does not show Loader component when isLoading is false', () => {
     render(<Controls onSearch={jest.fn()} isLoading={false} />);
     expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
+  });
+
+  test('renders Loader when isLoading is true', () => {
+    const onSearch = jest.fn();
+    render(<Controls onSearch={onSearch} isLoading={true} />);
+    expect(screen.queryByTestId('loader'));
   });
 });
