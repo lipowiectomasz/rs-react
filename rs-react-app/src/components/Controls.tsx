@@ -1,16 +1,18 @@
 import { useState, ChangeEvent } from 'react';
+import { useSelector } from 'react-redux';
+import { selectIsLoading } from '../features/selector/SelectorSlice';
 import '../style/Controls.css';
 import Loader from './Loader.tsx';
 
 interface ControlsProps {
   onSearch: (searchTerm: string) => void;
-  isLoading: boolean;
 }
 
-export default function Controls({ onSearch, isLoading }: ControlsProps) {
+export default function Controls({ onSearch }: ControlsProps) {
   const [searchValue, setSearchValue] = useState<string>(
     localStorage.getItem('searchTerm') || ''
   );
+  const isLoading = useSelector(selectIsLoading);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(event.target.value);

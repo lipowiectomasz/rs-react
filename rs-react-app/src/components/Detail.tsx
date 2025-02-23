@@ -1,5 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
+import { useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { useFetchCharacterDetailsQuery } from '../features/api/starWarsApi';
+import { selectCharacterDetail } from '../features/selector/SelectorSlice';
 import Loader from './Loader.tsx';
 import '../style/Detail.css';
 
@@ -7,76 +10,22 @@ interface DetailProps {
   detailId: string;
 }
 
-interface HeroDetails {
-  name: string;
-  height: string;
-  mass: string;
-  hair_color: string;
-  skin_color: string;
-  eye_color: string;
-  birth_year: string;
-  gender: string;
-  homeworld: string;
-  films: string[];
-  species: string[];
-  vehicles: string[];
-  starships: string[];
-}
-
 export default function Detail({ detailId }: DetailProps) {
-  const [heroDetails, setHeroDetails] = useState<HeroDetails | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<boolean>(false);
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const detailRef = useRef<HTMLDivElement>(null);
+  const {
+    data: hero,
+    error,
+    isLoading,
+  } = useFetchCharacterDetailsQuery(detailId);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchHeroDetails(detailId);
-  }, [detailId]);
-
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (
-        detailRef.current &&
-        !detailRef.current.contains(event.target as Node)
-      ) {
-        handleClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-    };
-  });
-
-  const fetchHeroDetails = async (id: string) => {
-    setIsLoading(true);
-    setError(false);
-
-    try {
-      const response = await fetch(`https://swapi.dev/api/people/${id}/`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch hero details');
-      }
-      const data = await response.json();
-      setHeroDetails(data);
-    } catch (err) {
-      console.error('Error fetching hero details:', err);
-      setError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (hero) {
+    dispatch(selectCharacterDetail(hero));
+  }
 
   const handleClose = () => {
-    const searchParams = new URLSearchParams(location.search);
-    searchParams.delete('detail');
-
-    navigate({
-      pathname: '/',
-      search: searchParams.toString(),
-    });
+    navigate('/');
   };
 
   if (isLoading) {
@@ -98,7 +47,7 @@ export default function Detail({ detailId }: DetailProps) {
     );
   }
 
-  if (!heroDetails) {
+  if (!hero) {
     return null;
   }
 
@@ -107,27 +56,27 @@ export default function Detail({ detailId }: DetailProps) {
       <button onClick={handleClose} className="close-btn">
         Close
       </button>
-      <h3 data-testid="heroname">{heroDetails.name}</h3>
+      <h3 data-testid="heroname">{hero.name}</h3>
       <p>
-        <strong>Height:</strong> {heroDetails.height}
+        <strong>Height:</strong> {hero.height}
       </p>
       <p>
-        <strong>Mass:</strong> {heroDetails.mass}
+        <strong>Mass:</strong> {hero.mass}
       </p>
       <p>
-        <strong>Hair Color:</strong> {heroDetails.hair_color}
+        <strong>Hair Color:</strong> {hero.hair_color}
       </p>
       <p>
-        <strong>Skin Color:</strong> {heroDetails.skin_color}
+        <strong>Skin Color:</strong> {hero.skin_color}
       </p>
       <p>
-        <strong>Eye Color:</strong> {heroDetails.eye_color}
+        <strong>Eye Color:</strong> {hero.eye_color}
       </p>
       <p>
-        <strong>Birth Year:</strong> {heroDetails.birth_year}
+        <strong>Birth Year:</strong> {hero.birth_year}
       </p>
       <p>
-        <strong>Gender:</strong> {heroDetails.gender}
+        <strong>Gender:</strong> {hero.gender}
       </p>
     </div>
   );

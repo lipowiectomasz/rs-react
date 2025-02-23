@@ -1,34 +1,26 @@
-import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import '../style/Card.css';
 import { useSelector, useDispatch } from 'react-redux';
 import { Hero, selectSelectedItems } from '../features/selector/SelectorSlice';
 import { selectItem, unselectItem } from '../features/selector/SelectorSlice';
+import { useFetchCharactersQuery } from '../features/api/starWarsApi';
 
 interface CardProps {
   searchTerm: string;
-  toggleLoading: (isLoading: boolean) => void;
   page: number;
-  isLoading: boolean;
 }
 
-interface Result {
-  name: string;
-  url: string;
-}
-
-export default function Card({
-  searchTerm,
-  toggleLoading,
-  page = 0,
-  isLoading,
-}: CardProps) {
-  const [results, setResults] = useState<Result[]>([]);
-  const [error, setError] = useState(false);
-  const [isNext, setIsNext] = useState(false);
-  const [currentPage, setCurrentPage] = useState(page);
+export default function Card({ searchTerm, page = 0 }: CardProps) {
   const dispatch = useDispatch();
   const selectedItems = useSelector(selectSelectedItems);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { data, error, isLoading } = useFetchCharactersQuery({
+    search: searchTerm,
+    page,
+  });
+  const results = data?.results || [];
+  const isNext = !!data?.next;
 
   const handleSelect = (item: Hero) => {
     if (selectedItems.find((selected) => selected.name === item.name)) {
@@ -37,51 +29,6 @@ export default function Card({
       dispatch(selectItem(item));
     }
   };
-
-  console.log('SELECETD');
-  console.log(selectedItems);
-
-  useEffect(() => {
-    setError(false);
-    toggleLoading(true);
-
-    const localSearchTerm = localStorage.getItem('searchTerm') || searchTerm;
-
-    let url = 'https://swapi.dev/api/people';
-    if (localSearchTerm !== '') {
-      url += `/?search=${localSearchTerm}`;
-    }
-
-    if (currentPage > 1) {
-      url +=
-        localSearchTerm !== ''
-          ? `&page=${currentPage}`
-          : `?page=${currentPage}`;
-    }
-
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return res.json();
-      })
-      .then((response) => {
-        toggleLoading(false);
-        if (response && response.results) {
-          setIsNext(!!response.next);
-          setResults(response.results);
-        }
-      })
-      .catch((err) => {
-        toggleLoading(false);
-        setError(true);
-        console.error('API error:', err);
-      });
-  }, [searchTerm, currentPage]);
-
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const handleListItemClick = (url: string) => {
     const id = url.split('/').filter(Boolean).pop();
@@ -104,8 +51,6 @@ export default function Card({
         pathname: location.pathname,
         search: searchParams.toString(),
       });
-
-      setCurrentPage(page);
     }
   };
 
@@ -128,7 +73,7 @@ export default function Card({
           </li>
           <hr />
           {results.map((hero, index) => (
-            <li key={index}>
+            <li key={hero.name}>
               <input
                 className="item-input"
                 type="checkbox"
@@ -144,9 +89,7 @@ export default function Card({
                 onClick={() => handleListItemClick(hero.url)}
               >
                 <div className="item-name">
-                  {currentPage > 1
-                    ? index + (currentPage - 1) * 10 + 1
-                    : index + 1}
+                  {page > 1 ? index + (page - 1) * 10 + 1 : index + 1}
                 </div>
                 <div className="item-desc">{hero.name}</div>
               </div>
@@ -155,28 +98,26 @@ export default function Card({
         </ul>
       )}
       <div className="pagination">
-        {currentPage > 1 && (
+        {page > 1 && (
           <button
             className="pageBtn"
-            onClick={() => handlePageNavigation(currentPage - 1)}
+            onClick={() => handlePageNavigation(page - 1)}
           >
-            {currentPage - 1}
+            {page - 1}
           </button>
         )}
         <button
           className="pageBtn active"
-          onClick={() => handlePageNavigation(currentPage || 1)}
+          onClick={() => handlePageNavigation(page || 1)}
         >
-          {currentPage || 1}
+          {page || 1}
         </button>
         {isNext && (
           <button
             className="pageBtn"
-            onClick={() =>
-              handlePageNavigation(currentPage == 0 ? 2 : currentPage + 1)
-            }
+            onClick={() => handlePageNavigation(page == 0 ? 2 : page + 1)}
           >
-            {currentPage == 0 ? 2 : currentPage + 1}
+            {page == 0 ? 2 : page + 1}
           </button>
         )}
       </div>
