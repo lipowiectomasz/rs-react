@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import '../style/Card.css';
+import { useSelector, useDispatch } from 'react-redux';
+import { Hero, selectSelectedItems } from '../features/selector/SelectorSlice';
+import { selectItem, unselectItem } from '../features/selector/SelectorSlice';
 
 interface CardProps {
   searchTerm: string;
   toggleLoading: (isLoading: boolean) => void;
   page: number;
+  isLoading: boolean;
 }
 
 interface Result {
@@ -17,11 +21,25 @@ export default function Card({
   searchTerm,
   toggleLoading,
   page = 0,
+  isLoading,
 }: CardProps) {
   const [results, setResults] = useState<Result[]>([]);
   const [error, setError] = useState(false);
   const [isNext, setIsNext] = useState(false);
   const [currentPage, setCurrentPage] = useState(page);
+  const dispatch = useDispatch();
+  const selectedItems = useSelector(selectSelectedItems);
+
+  const handleSelect = (item: Hero) => {
+    if (selectedItems.find((selected) => selected.name === item.name)) {
+      dispatch(unselectItem(item.name));
+    } else {
+      dispatch(selectItem(item));
+    }
+  };
+
+  console.log('SELECETD');
+  console.log(selectedItems);
 
   useEffect(() => {
     setError(false);
@@ -91,6 +109,10 @@ export default function Card({
     }
   };
 
+  if (isLoading) {
+    return <div className="loading-box">Loading...</div>;
+  }
+
   return (
     <div className="card">
       <h3 className="card-title">Results</h3>
@@ -106,13 +128,28 @@ export default function Card({
           </li>
           <hr />
           {results.map((hero, index) => (
-            <li key={index} onClick={() => handleListItemClick(hero.url)}>
-              <div className="item-name">
-                {currentPage > 1
-                  ? index + (currentPage - 1) * 10 + 1
-                  : index + 1}
+            <li key={index}>
+              <input
+                className="item-input"
+                type="checkbox"
+                checked={
+                  !!selectedItems.find(
+                    (selected) => selected.name === hero.name
+                  )
+                }
+                onChange={() => handleSelect(hero)}
+              />
+              <div
+                className="item"
+                onClick={() => handleListItemClick(hero.url)}
+              >
+                <div className="item-name">
+                  {currentPage > 1
+                    ? index + (currentPage - 1) * 10 + 1
+                    : index + 1}
+                </div>
+                <div className="item-desc">{hero.name}</div>
               </div>
-              <div className="item-desc">{hero.name}</div>
             </li>
           ))}
         </ul>

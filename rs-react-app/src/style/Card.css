@@ -11,23 +11,34 @@ ul {
   padding: 0;
 }
 li {
-  padding: 10px;
   display: flex;
   align-items: center;
+  flex-direction: row;
   gap: 1rem;
   cursor: pointer;
 }
 li:hover {
   background-color: #424242;
 }
+.item {
+  padding: 10px;
+  display: flex;
+  flex: 1;
+}
+.item-input {
+  width: 20px;
+  cursor: pointer;
+}
 .item-name {
   text-align: center;
   width: 30%;
+  height: 100%;
   font-size: 12px;
 }
 .item-desc {
   text-align: center;
   width: 70%;
+  height: 100%;
   font-size: 12px;
 }
 .head {
@@ -35,6 +46,10 @@ li:hover {
 }
 .pageBtn {
   width: 50px;
+}
+.pageBtn:hover {
+  background-color: #424242;
+  cursor: pointer;
 }
 .pagination {
   display: flex;
@@ -45,4 +60,11 @@ li:hover {
 .active {
   transform: scale(1.2);
   background-color: #4f4f4f;
+}
+.loading-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 612px;
 }
