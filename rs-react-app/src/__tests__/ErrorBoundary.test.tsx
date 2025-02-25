@@ -31,7 +31,7 @@ describe('ErrorBoundary Component', () => {
   test('logs error to service when an error occurs', () => {
     const logErrorSpy = jest
       .spyOn(console, 'error')
-      .mockImplementation(() => {}); // Mock error logging
+      .mockImplementation(() => {});
 
     const ErrorComponent = () => {
       throw new Error('Test error');

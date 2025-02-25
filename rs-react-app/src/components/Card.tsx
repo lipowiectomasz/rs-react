@@ -1,8 +1,12 @@
 import { useNavigate, useLocation } from 'react-router';
 import '../style/Card.css';
 import { useSelector, useDispatch } from 'react-redux';
-import { Hero, selectSelectedItems } from '../features/selector/SelectorSlice';
-import { selectItem, unselectItem } from '../features/selector/SelectorSlice';
+import {
+  Hero,
+  selectSelectedItems,
+  selectItem,
+  unselectItem,
+} from '../features/selector/SelectorSlice';
 import { useFetchCharactersQuery } from '../features/api/starWarsApi';
 
 interface CardProps {

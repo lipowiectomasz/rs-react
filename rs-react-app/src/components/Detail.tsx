@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useFetchCharacterDetailsQuery } from '../features/api/starWarsApi';
 import { selectCharacterDetail } from '../features/selector/SelectorSlice';
@@ -20,12 +20,15 @@ export default function Detail({ detailId }: DetailProps) {
   } = useFetchCharacterDetailsQuery(detailId);
   const navigate = useNavigate();
 
-  if (hero) {
-    dispatch(selectCharacterDetail(hero));
-  }
+  useEffect(() => {
+    if (hero) {
+      dispatch(selectCharacterDetail(hero));
+    }
+  }, [hero, dispatch]);
 
   const handleClose = () => {
     navigate('/');
+    dispatch(selectCharacterDetail(null));
   };
 
   if (isLoading) {

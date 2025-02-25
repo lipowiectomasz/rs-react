@@ -1,12 +1,17 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Hero, setLoading } from '../selector/SelectorSlice';
 
+export type FetchCharactersResponse = {
+  results: Hero[];
+  next: string | null;
+};
+
 export const starWarsApi = createApi({
   reducerPath: 'starWarsApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'https://swapi.dev/api' }),
   endpoints: (builder) => ({
     fetchCharacters: builder.query<
-      { results: Hero[]; next: string | null },
+      FetchCharactersResponse,
       { search: string; page: number }
     >({
       query: ({ search, page }) => ({

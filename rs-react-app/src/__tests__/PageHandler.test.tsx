@@ -1,20 +1,34 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import Router from '../components/packages/PageHandler';
 
-jest.mock(
-  '../App',
-  () =>
-    ({ children, page }: { children?: React.ReactNode; page: number }) => (
-      <div>
-        <p>App Component, page: {page}</p>
-        {children}
-      </div>
-    )
-);
-jest.mock('../components/NoPage', () => () => <div>No Page Found</div>);
-jest.mock('../components/Detail', () => (props: { detailId: string }) => (
-  <div>Detail Component {props.detailId}</div>
-));
+jest.mock('../App', () => {
+  const MockApp = ({
+    children,
+    page,
+  }: {
+    children?: React.ReactNode;
+    page: number;
+  }) => (
+    <div>
+      <p>App Component, page: {page}</p>
+      {children}
+    </div>
+  );
+  MockApp.displayName = 'MockApp';
+  return MockApp;
+});
+jest.mock('../components/NoPage', () => {
+  const MockNoPage = () => <div>No Page Found</div>;
+  MockNoPage.displayName = 'MockNoPage';
+  return MockNoPage;
+});
+jest.mock('../components/Detail', () => {
+  const MockDetail = (props: { detailId: string }) => (
+    <div>Detail Component {props.detailId}</div>
+  );
+  MockDetail.displayName = 'MockDetail';
+  return MockDetail;
+});
 
 describe('Router Component', () => {
   beforeEach(() => {

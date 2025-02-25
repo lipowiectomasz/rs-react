@@ -1,113 +1,57 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
 import Detail from '../components/Detail';
 import '@testing-library/jest-dom';
+import { Provider } from 'react-redux';
+import { store } from '../app/store';
+import { starWarsApi } from '../features/api/starWarsApi';
 import { useNavigate } from 'react-router';
-import { mockFetch } from '../__mocks__/fetchMock.ts';
 
 jest.mock('react-router', () => ({
   ...jest.requireActual('react-router'),
   useNavigate: jest.fn(),
 }));
 
-describe('Detail Component', () => {
+describe('Detail Component with RTK Query Mock', () => {
   let mockNavigate: jest.Mock;
 
   beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation((message) => {
+      if (typeof message === 'string' && message.includes('API error')) {
+        return;
+      }
+      console.error(message);
+    });
     mockNavigate = jest.fn();
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     jest.clearAllMocks();
+    jest.restoreAllMocks();
+    act(() => {
+      store.dispatch(starWarsApi.util.resetApiState());
+    });
   });
 
-  test('close detail after clicking on close', async () => {
-    window.fetch = mockFetch({
-      birth_year: '19BBY',
-      created: '2014-12-09T13:50:51.644000Z',
-      edited: '2014-12-20T21:17:56.891000Z',
-      eye_color: 'blue',
-      films: [
-        'https://swapi.dev/api/films/1/',
-        'https://swapi.dev/api/films/2/',
-        'https://swapi.dev/api/films/3/',
-        'https://swapi.dev/api/films/6/',
-      ],
-      gender: 'male',
-      hair_color: 'blond',
-      height: '172',
-      homeworld: 'https://swapi.dev/api/planets/1/',
-      mass: '77',
-      name: 'Luke Skywalker',
-      skin_color: 'fair',
-      species: [],
-      starships: [
-        'https://swapi.dev/api/starships/12/',
-        'https://swapi.dev/api/starships/22/',
-      ],
-      url: 'https://swapi.dev/api/people/1/',
-      vehicles: [
-        'https://swapi.dev/api/vehicles/14/',
-        'https://swapi.dev/api/vehicles/30/',
-      ],
+  test('renders detail component with successful API response', async () => {
+    await act(async () => {
+      store.dispatch(starWarsApi.endpoints.fetchCharacterDetails.initiate('1'));
     });
 
-    render(<Detail detailId={'1'} />);
-    const titleOnSite = await waitFor(() => screen.getByText('Close'));
-    fireEvent.click(titleOnSite);
-    await waitFor(() =>
-      expect(mockNavigate).toHaveBeenCalledWith({ pathname: '/', search: '' })
+    render(
+      <Provider store={store}>
+        <Detail detailId="1" />
+      </Provider>
     );
-  });
 
-  test('error on call', async () => {
-    window.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-    render(<Detail detailId={'da'} />);
-
-    await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Error fetching hero details:',
-        expect.any(Error)
-      );
-    });
-
-    consoleSpy.mockRestore();
-  });
-
-  test('renders detail component with successful fetch', async () => {
-    window.fetch = mockFetch({
-      birth_year: '19BBY',
-      created: '2014-12-09T13:50:51.644000Z',
-      edited: '2014-12-20T21:17:56.891000Z',
-      eye_color: 'blue',
-      films: [
-        'https://swapi.dev/api/films/1/',
-        'https://swapi.dev/api/films/2/',
-        'https://swapi.dev/api/films/3/',
-        'https://swapi.dev/api/films/6/',
-      ],
-      gender: 'male',
-      hair_color: 'blond',
-      height: '172',
-      homeworld: 'https://swapi.dev/api/planets/1/',
-      mass: '77',
-      name: 'Luke Skywalker',
-      skin_color: 'fair',
-      species: [],
-      starships: [
-        'https://swapi.dev/api/starships/12/',
-        'https://swapi.dev/api/starships/22/',
-      ],
-      url: 'https://swapi.dev/api/people/1/',
-      vehicles: [
-        'https://swapi.dev/api/vehicles/14/',
-        'https://swapi.dev/api/vehicles/30/',
-      ],
-    });
-
-    render(<Detail detailId="1" />);
     await waitFor(() => {
       expect(screen.getByTestId('heroname')).toHaveTextContent(
         'Luke Skywalker'
@@ -115,93 +59,66 @@ describe('Detail Component', () => {
     });
   });
 
-  test('calls handleClose when clicking outside the detail component', async () => {
-    window.fetch = mockFetch({
-      birth_year: '19BBY',
-      created: '2014-12-09T13:50:51.644000Z',
-      edited: '2014-12-20T21:17:56.891000Z',
-      eye_color: 'blue',
-      films: [
-        'https://swapi.dev/api/films/1/',
-        'https://swapi.dev/api/films/2/',
-        'https://swapi.dev/api/films/3/',
-        'https://swapi.dev/api/films/6/',
-      ],
-      gender: 'male',
-      hair_color: 'blond',
-      height: '172',
-      homeworld: 'https://swapi.dev/api/planets/1/',
-      mass: '77',
-      name: 'Luke Skywalker',
-      skin_color: 'fair',
-      species: [],
-      starships: [
-        'https://swapi.dev/api/starships/12/',
-        'https://swapi.dev/api/starships/22/',
-      ],
-      url: 'https://swapi.dev/api/people/1/',
-      vehicles: [
-        'https://swapi.dev/api/vehicles/14/',
-        'https://swapi.dev/api/vehicles/30/',
-      ],
-    });
-
-    render(<Detail detailId="1" />);
-    await waitFor(() => {
-      expect(screen.getByTestId('heroname')).toHaveTextContent(
-        'Luke Skywalker'
-      );
-    });
-
-    fireEvent.mouseDown(document.body);
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ pathname: '/', search: '' });
-    });
-  });
-
-  test('displays error message when fetch response is not ok', async () => {
-    window.fetch = jest.fn(() =>
-      Promise.resolve(new Response(JSON.stringify({}), { status: 400 }))
-    ) as unknown as typeof fetch;
-    const consoleSpy = jest
+  test('closes detail when clicking close button', async () => {
+    const logErrorSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
 
-    render(<Detail detailId="1" />);
+    await act(async () => {
+      store.dispatch(starWarsApi.endpoints.fetchCharacterDetails.initiate('1'));
+    });
+
+    render(
+      <Provider store={store}>
+        <Detail detailId="1" />
+      </Provider>
+    );
+
+    const closeButton = await screen.findByText('Close');
+    act(() => {
+      fireEvent.click(closeButton);
+    });
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/'));
+
+    logErrorSpy.mockRestore();
+  });
+
+  test('displays error message when API call fails', async () => {
+    const logErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation((message) => {
+        if (typeof message === 'string' && message.includes('API error')) {
+          return;
+        }
+        console.error(message);
+      });
+
+    await act(async () => {
+      store.dispatch(
+        starWarsApi.endpoints.fetchCharacterDetails.initiate('invalid-id')
+      );
+    });
+
+    render(
+      <Provider store={store}>
+        <Detail detailId="invalid-id" />
+      </Provider>
+    );
+
     await waitFor(() => {
       expect(
         screen.getByText('Error loading hero details. Please try again later.')
-      );
-      expect.any(Error);
+      ).toBeInTheDocument();
     });
 
-    consoleSpy.mockRestore();
-  });
-
-  test('displays error on network failure', async () => {
-    window.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-    render(<Detail detailId="da" />);
-    await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Error fetching hero details:',
-        expect.any(Error)
-      );
-    });
-    consoleSpy.mockRestore();
-  });
-
-  test('returns null when fetch returns null data', async () => {
-    window.fetch = jest.fn(() =>
-      Promise.resolve(new Response(JSON.stringify(null), { status: 200 }))
-    ) as unknown as typeof fetch;
-
-    const { container } = render(<Detail detailId="1" />);
+    const closeButton = screen.getByText('Close');
+    fireEvent.click(closeButton);
 
     await waitFor(() => {
-      expect(container.innerHTML).toBe('');
+      expect(mockNavigate).toHaveBeenCalledWith('/');
     });
+
+    logErrorSpy.mockRestore();
   });
 });

@@ -1,188 +1,243 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Card from '../components/Card';
-import { useNavigate, useLocation } from 'react-router';
-import { mockFetch } from '../__mocks__/fetchMock';
-import Detail from "../components/Detail.tsx";
+import '@testing-library/jest-dom';
+import { useSelector, useDispatch, useStore } from 'react-redux';
+import { MemoryRouter, useNavigate } from 'react-router';
+import { useFetchCharactersQuery } from '../features/api/starWarsApi';
+import {
+  selectSelectedItems,
+  selectItem,
+  unselectItem,
+} from '../features/selector/SelectorSlice';
+
+jest.mock('../features/api/starWarsApi', () => ({
+  ...jest.requireActual('../features/api/starWarsApi'),
+  useFetchCharactersQuery: jest.fn(),
+}));
+
+jest.mock('react-redux', () => ({
+  useSelector: jest.fn(),
+  useDispatch: jest.fn(),
+  useStore: jest.fn(),
+}));
 
 jest.mock('react-router', () => ({
   ...jest.requireActual('react-router'),
   useNavigate: jest.fn(),
-  useLocation: jest.fn(),
 }));
 
-describe('Card Component', () => {
-  let mockNavigate: jest.Mock;
+describe('Card Component API Mocking', () => {
+  let selectedItems: { name: string; url: string }[] = [];
+  const mockSelectedItems = {
+    results: [
+      { name: 'Luke Skywalker', url: '/detail/1/' },
+      { name: 'Darth Vader', url: '/detail/2/' },
+    ],
+    next: '/api/people/?page=2',
+  };
+
+  const mockDispatch = jest.fn();
+  const mockStore = {};
+  const mockNavigate = jest.fn();
 
   beforeEach(() => {
+    (useDispatch as unknown as jest.Mock).mockReturnValue(mockDispatch);
+    (useStore as unknown as jest.Mock).mockReturnValue(mockStore);
+    (useSelector as unknown as jest.Mock).mockImplementation((selector) => {
+      if (selector === selectSelectedItems) return selectedItems;
+      return [];
+    });
+    (useNavigate as unknown as jest.Mock).mockReturnValue(mockNavigate);
+  });
+
+  afterEach(() => {
     jest.clearAllMocks();
-    mockNavigate = jest.fn();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
-    (useLocation as jest.Mock).mockReturnValue({
-      pathname: '/',
-      search: '',
-    });
+    selectedItems = [];
   });
 
-  test('renders results from API call', async () => {
-    window.fetch = mockFetch({
-      count: 82,
-      next: '',
-      previous: null,
-      results: [
-        {
+  test('renders Card component with mocked API response', async () => {
+    (useFetchCharactersQuery as jest.Mock).mockReturnValue({
+      data: mockSelectedItems,
+      error: null,
+      isLoading: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <Card searchTerm="Luke" page={1} />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('Results')).toBeInTheDocument();
+    expect(screen.getByText('Luke Skywalker')).toBeInTheDocument();
+    expect(screen.getByText('Darth Vader')).toBeInTheDocument();
+  });
+
+  test('displays an error message when API request fails', async () => {
+    (useFetchCharactersQuery as jest.Mock).mockReturnValue({
+      data: null,
+      error: { message: 'Not Found' },
+      isLoading: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <Card searchTerm="Luke" page={1} />
+      </MemoryRouter>
+    );
+
+    expect(
+      await screen.findByText(
+        'The API is not responding. Please try again later.'
+      )
+    ).toBeInTheDocument();
+  });
+
+  test('renders loading state', async () => {
+    (useFetchCharactersQuery as jest.Mock).mockReturnValue({
+      data: null,
+      error: null,
+      isLoading: true,
+    });
+
+    render(
+      <MemoryRouter>
+        <Card searchTerm="Luke" page={1} />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('Loading...')).toBeInTheDocument();
+  });
+
+  test('selecting an item dispatches selectItem action', async () => {
+    (useFetchCharactersQuery as jest.Mock).mockReturnValue({
+      data: { results: [{ name: 'Luke Skywalker', url: '/detail/1/' }] },
+      error: null,
+      isLoading: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <Card searchTerm="Luke" page={1} />
+      </MemoryRouter>
+    );
+
+    const checkbox = screen.getByRole('checkbox');
+
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(mockDispatch).toHaveBeenCalledWith(
+        selectItem({
           name: 'Luke Skywalker',
-          url: 'https://swapi.dev/api/people/1/',
-        },
-      ],
-    });
-    render(<Card searchTerm="Luke" toggleLoading={jest.fn()} page={1} />);
-    await waitFor(() => screen.getByText('Results'));
-    await waitFor(() => expect(screen.getByText('Luke Skywalker')));
-  });
-
-  test('shows an error message if API call fails (network error)', async () => {
-    window.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-    render(<Card searchTerm="invalid" toggleLoading={jest.fn()} page={1} />);
-    await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith('API error:', expect.any(Error));
-    });
-    consoleSpy.mockRestore();
-  });
-
-  test('handles non-ok response from API', async () => {
-    window.fetch = jest.fn(() =>
-      Promise.resolve({
-        ok: false,
-        json: () => Promise.resolve({}),
-      })
-    ) as unknown as typeof fetch;
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-    const toggleLoading = jest.fn();
-    render(<Card searchTerm="Luke" toggleLoading={toggleLoading} page={1} />);
-    await waitFor(() => {
-      expect(toggleLoading).toHaveBeenCalledWith(false);
-      expect(
-        screen.getByText('The API is not responding. Please try again later.')
+          url: '/detail/1/',
+        })
       );
-      expect.any(Error);
     });
-
-    consoleSpy.mockRestore();
   });
 
-  test('navigates to detail page on hero item click without search params', async () => {
-    window.fetch = mockFetch({
-      count: 82,
-      next: '',
-      previous: null,
-      results: [
-        {
-          name: 'Luke Skywalker',
-          url: 'https://swapi.dev/api/people/1/',
-        },
-      ],
+  test('unselecting an item dispatches unselectItem action', async () => {
+    selectedItems = [{ name: 'Luke Skywalker', url: '/detail/1/' }];
+
+    (useSelector as unknown as jest.Mock).mockImplementation((selector) => {
+      if (selector === selectSelectedItems) return selectedItems;
+      return [];
     });
-    const toggleLoading = jest.fn();
-    (useLocation as jest.Mock).mockReturnValue({
-      pathname: '/',
-      search: '',
+
+    (useFetchCharactersQuery as jest.Mock).mockReturnValue({
+      data: { results: [{ name: 'Luke Skywalker', url: '/detail/1/' }] },
+      error: null,
+      isLoading: false,
     });
-    render(<Card searchTerm="Luke" toggleLoading={toggleLoading} page={1} />);
-    const heroItem = await screen.findByText('Luke Skywalker');
-    fireEvent.click(heroItem);
+
+    render(
+      <MemoryRouter>
+        <Card searchTerm="Luke" page={1} />
+      </MemoryRouter>
+    );
+
+    const checkbox = screen.getByRole('checkbox');
+
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(mockDispatch).toHaveBeenCalledWith(unselectItem('Luke Skywalker'));
+    });
+
+    selectedItems = [];
+    (useSelector as unknown as jest.Mock).mockImplementation((selector) => {
+      if (selector === selectSelectedItems) return selectedItems;
+      return [];
+    });
+
+    expect(selectedItems).toEqual([]);
+  });
+
+  test('navigates to detail page when clicking on an item', async () => {
+    (useFetchCharactersQuery as jest.Mock).mockReturnValue({
+      data: { results: [{ name: 'Luke Skywalker', url: '/detail/1/' }] },
+      error: null,
+      isLoading: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <Card searchTerm="Luke" page={1} />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByText('Luke Skywalker'));
+
     expect(mockNavigate).toHaveBeenCalledWith('/detail/1');
   });
 
-  test('navigates to detail page on hero item click with search params', async () => {
-    window.fetch = mockFetch({
-      count: 82,
-      next: '',
-      previous: null,
-      results: [
-        {
-          name: 'Darth Vader',
-          url: 'https://swapi.dev/api/people/4/',
-        },
-      ],
+  test('pagination buttons work correctly', async () => {
+    (useFetchCharactersQuery as jest.Mock).mockReturnValue({
+      data: mockSelectedItems,
+      error: null,
+      isLoading: false,
     });
-    const toggleLoading = jest.fn();
-    (useLocation as jest.Mock).mockReturnValue({
-      pathname: '/somepath',
-      search: '?sort=asc',
-    });
-    render(<Card searchTerm="Vader" toggleLoading={toggleLoading} page={1} />);
-    const heroItem = await screen.findByText('Darth Vader');
-    fireEvent.click(heroItem);
-    expect(mockNavigate).toHaveBeenCalledWith('/detail/4/somepath?sort=asc');
-  });
 
-  test('navigates to the next page on pagination button click when isNext is true', async () => {
-    window.fetch = mockFetch({
-      count: 82,
-      next: 'https://swapi.dev/api/people/?page=2',
-      previous: null,
-      results: [
-        {
-          name: 'Luke Skywalker',
-          url: 'https://swapi.dev/api/people/1/',
-        },
-      ],
-    });
-    (useLocation as jest.Mock).mockReturnValue({
-      pathname: '/',
-      search: '',
-    });
-    const toggleLoading = jest.fn();
-    render(<Card searchTerm="Luke" toggleLoading={toggleLoading} page={1} />);
-    await waitFor(() => screen.getByText('Results'));
-    const nextPageButton = await waitFor(() => screen.getByText('2'));
-    fireEvent.click(nextPageButton);
+    render(
+      <MemoryRouter>
+        <Card searchTerm="Luke" page={1} />
+      </MemoryRouter>
+    );
+
+    const nextPageButton = screen
+      .getAllByText('2')
+      .find((btn) => btn.tagName === 'BUTTON');
+    expect(nextPageButton).toBeInTheDocument();
+    if (nextPageButton) fireEvent.click(nextPageButton);
     expect(mockNavigate).toHaveBeenCalledWith({
       pathname: '/',
       search: 'page=2',
     });
-  });
 
-  test('navigates to the previous page on pagination button click when currentPage > 1', async () => {
-    window.fetch = mockFetch({
-      count: 82,
-      next: 'https://swapi.dev/api/people/?page=3',
-      previous: null,
-      results: [
-        {
-          name: 'Leia Organa',
-          url: 'https://swapi.dev/api/people/5/',
-        },
-      ],
-    });
-    (useLocation as jest.Mock).mockReturnValue({
-      pathname: '/',
-      search: '',
-    });
-    const toggleLoading = jest.fn();
-    render(<Card searchTerm="Leia" toggleLoading={toggleLoading} page={2} />);
-    await waitFor(() => screen.getByText('Leia Organa'));
-    const previousButton = screen.getByText('1');
-    fireEvent.click(previousButton);
+    const activePageButton = screen
+      .getAllByText('1')
+      .find((btn) => btn.tagName === 'BUTTON');
+    expect(activePageButton).toBeInTheDocument();
+    if (activePageButton) fireEvent.click(activePageButton);
     expect(mockNavigate).toHaveBeenCalledWith({
       pathname: '/',
       search: 'page=1',
     });
   });
 
-  test('clicking active pagination button navigates with current page', async () => {
-    window.fetch = mockFetch({
-      count: 82,
-      next: 'https://swapi.dev/api/people/?page=2',
-      previous: null,
-      results: [{ name: 'Test Hero', url: 'https://swapi.dev/api/people/1/' }],
+  test('handles missing pagination correctly', async () => {
+    (useFetchCharactersQuery as jest.Mock).mockReturnValue({
+      data: { results: [], next: null },
+      error: null,
+      isLoading: false,
     });
-    (useLocation as jest.Mock).mockReturnValue({ pathname: '/', search: '' });
-    const toggleLoading = jest.fn();
-    render(<Card searchTerm="Test" toggleLoading={toggleLoading} page={1} />);
-    const activeButton = await screen.findByText('1');
-    fireEvent.click(activeButton);
-    expect(mockNavigate).toHaveBeenCalledWith({ pathname: '/', search: 'page=1' });
+
+    render(
+      <MemoryRouter>
+        <Card searchTerm="Luke" page={1} />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByText('2')).not.toBeInTheDocument();
   });
 });

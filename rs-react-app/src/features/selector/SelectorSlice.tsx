@@ -40,7 +40,7 @@ export const selectedItemsSlice = createSlice({
     unselectAll: (state) => {
       state.items = [];
     },
-    selectCharacterDetail: (state, action: PayloadAction<Hero>) => {
+    selectCharacterDetail: (state, action: PayloadAction<Hero | null>) => {
       state.selectedCharacter = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
@@ -61,16 +61,16 @@ export default selectedItemsSlice.reducer;
 
 export const selectSelectedItems = createSelector(
   (state: { selectedItems: SelectedHeroes }) => state.selectedItems.items,
-  (items) => items
+  (items) => [...items]
 );
 
 export const selectCharacter = createSelector(
   (state: { selectedItems: SelectedHeroes }) =>
     state.selectedItems.selectedCharacter,
-  (selectedCharacter) => selectedCharacter
+  (selectedCharacter) => (selectedCharacter ? { ...selectedCharacter } : null)
 );
 
 export const selectIsLoading = createSelector(
   (state: { selectedItems: SelectedHeroes }) => state.selectedItems.isLoading,
-  (isLoading) => isLoading
+  (isLoading) => Boolean(isLoading)
 );
