@@ -1,0 +1,70 @@
+.card {
+  padding: 20px;
+  margin-bottom: 20px;
+  max-width: 100%;
+  flex: 1;
+}
+.card-title {
+  text-align: center;
+}
+ul {
+  padding: 0;
+}
+li {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 1rem;
+  cursor: pointer;
+}
+li:hover {
+  background-color: #424242;
+}
+.item {
+  padding: 10px;
+  display: flex;
+  flex: 1;
+}
+.item-input {
+  width: 20px;
+  cursor: pointer;
+}
+.item-name {
+  text-align: center;
+  width: 30%;
+  height: 100%;
+  font-size: 12px;
+}
+.item-desc {
+  text-align: center;
+  width: 70%;
+  height: 100%;
+  font-size: 12px;
+}
+.head {
+  font-size: 16px;
+}
+.pageBtn {
+  width: 50px;
+}
+.pageBtn:hover {
+  background-color: #424242;
+  cursor: pointer;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.active {
+  transform: scale(1.2);
+  background-color: #4f4f4f;
+}
+.loading-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 612px;
+}
