@@ -1,2 +1,2 @@
-npm test
 prettier --write .
+npm run lint
