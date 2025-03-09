@@ -1,24 +1,29 @@
 {
   "compilerOptions": {
-    "target": "ES6",
-    "module": "ESNext",
-    "jsx": "react-jsx",
-    "esModuleInterop": true,
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "allowImportingTsExtensions": true, // Fixes TS5097
     "noEmit": true,
-    "types": ["jest", "node"],
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "baseUrl": ".",
     "paths": {
-      "*": ["node_modules/*"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "src/__tests__/**/*"],
-  "exclude": ["node_modules", "build", "dist"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }

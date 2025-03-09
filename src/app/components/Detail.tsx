@@ -1,3 +1,4 @@
+'use client';
 import { useNavigate } from 'react-router';
 import { useRef, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
