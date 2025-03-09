@@ -1,0 +1,11 @@
+.error-btn-box {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.error-btn-box button:hover {
+  background-color: #424242;
+  cursor: pointer;
+}
